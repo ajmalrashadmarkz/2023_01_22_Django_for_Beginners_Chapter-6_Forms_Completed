@@ -1,0 +1,215 @@
+____________________  1. Initial Set Up - Django_project  ____________________
+
+1. Django 4.1.5 and Python 3.10
+2. Create Directory - blog
+3. Create a virtual environment within this new directory
+    - python -m venv .venv
+    - Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser [..Windows Execution - Enable for running scripts]
+    - .venv\Scripts\Activate.ps1 [.. Activate - virtual environment]
+    - deactivate [..Deactivate and leave a virtual environment type]
+4. Install Django
+    - python -m pip install django~=4.1.5
+5. Pip to be on the latest version
+    - python -m pip install --upgrade pip
+6. Create a new Django project [.. Project Name = django_project]
+    - django-admin startproject django_project .
+7. Add .gitignore
+
+
+____________________ 2. Git SetUp -- Initialisation  ____________________
+    - git init
+    - git status
+    - git config user.name "ajmalrashadmarkz"
+    - git config user.email "ajmalrashadmarkz@gmail.com"
+    - git add .
+    - git commit -m "1. Setup Django Basics files"
+    -  git remote add origin https://github.com/ajmalrashadmarkz/11_22_09_Django_for_Beginners_Chapter-5_ Blog-App.git
+    - git push -u origin master
+
+____________________  3. Create App - blog ____________________
+    - Create pages app
+        ○ python manage.py startapp blog
+    - Register the App
+        ○  django_project/settings.py
+        ○  INSTALLED_APPS = [
+			    .....
+			   "posts.apps.BlogConfig", # new
+			]
+	- Migrate the database
+	    ○ python manage.py migrate
+
+____________________  4. Setup Template Folder & Home Page  ____________________
+    - Create new directory in the following order
+        ○ pages[...App folder] -> templates [...New Dir] -> pages [...New Dir]
+    - Create Home Page
+        ○ pages\templates\pages\home.html
+
+                    OR
+    - Create new directory templates in project folder
+        ○ django_project -> templates [...New Dir]
+    - Create Home page
+        ○ django_project\templates\home.html
+    - Add templates in django_project/settings.py
+        TEMPLATES = [
+            {
+                ...
+                "DIRS": [BASE_DIR / "templates"], # new
+                ...
+            },
+        ]
+
+____________________  5. Create Class Based View for model class[...Post]  ____________________
+    - blog/views.py
+    - import ListView -> django.view.generic
+    - import Post -> models
+    - Create a class
+        ○ HomePageView(TemplateView [...Derived Class] ):
+               template_name = "webpage name" [...Class variable]
+
+____________________  6. SetUp Url for project and app  ____________________
+    - Create new urls.py file in app folder
+        ○ blog/urls.py
+        ○ import path
+        ○ import HomePageView
+        ○ urlpatterns = [
+                path("", HomePageView.as_view(), name="home" ),
+            ]
+    - Include app url in project url
+        ○ django_project/urls
+        ○ import include -> [... from django.urls]
+        ○ urlpatterns = [
+                path("", include("pages.urls")),
+            ]
+
+
+____________________  7. Create Database Model  ____________________
+    - blog/models.py
+    - import models, reverse
+    - Create a class ->
+        name post
+        attributes title[...char],Author[...foriegn key],body[...char]
+    - Author -> ForeignKey
+        allows for a many-to-one relationship
+        given user can be the author of many different blog posts
+        all many-to-one relationships such as a ForeignKey we must also specify an on_delete75 option
+    - get_absolute_url
+        URL named post_detail and pass in the pk
+
+    - Migration
+        python manage.py makemigrations blog
+        python manage.py migrate
+
+____________________  8. Django - Admin   ____________________
+    - Create a SuperUser
+        python manage.py createsuperuser
+    - register on
+        blog/admin.py
+
+
+____________________  9. Setup the template   ____________________
+                    base.html
+    - Create a new html file -> base.html [include]
+        header -> Add blog page in header
+            <h1><a href="{% url "home" %}">Blog</a> </h1>
+    - Add block & end block for content loading
+
+                    home.html
+    - base.html extends in to home page
+        {% extends "base.html" %}
+    - define block content inside the block & end block
+        {% block content %}
+        {% for post in post_list %}
+            <div class="post-entry">
+                <h2><a href="">{{ post.title }}</a></h2>
+                <p>{{ post.body }}</p>
+            </div>
+        {% endfor %}
+        {% endblock content %}
+
+____________________  9. Static file Dealing   ____________________
+    - Create a new directory  in project folder -> static
+    - Update static url in settings
+        STATIC_URL = "/static/"
+    - Specify where the static folder available
+        STATICFILES_DIRS = [BASE_DIR / "static"]
+    - inside static folder create a new directory -> css
+    - Create a new file inside the css folder -> base.css
+
+                base.css
+    - header h1 a {
+        color: red;
+     }
+
+                base.html
+    - load the static folder
+        {% load static %}
+    - link the stylesheet
+        <link rel="stylesheet" href="{% static 'css/base.css' %}">
+
+____________________  9. Individual blog pages   ____________________
+                    # blog/views.py
+    - import DetailView -> django.views.generic
+    - Create new class -> BlogDetailView [Base Class - DetailView]
+    - Attributes model,template_name [model - Post, template_name - post_detail.html]
+
+                    #template/post_detail.html
+    - create a new html page
+    - extends base class
+    - create block -> content
+    - setup div
+        inside div h2 & p
+
+                    #blog/urls
+    - import BlogDetailView [view]
+    - setup path("", BlogDetailView.as_view(), name="....html")
+    - url as post/key
+
+                    #template/home.html
+    - setup hyperlink
+        url -> post_details with key
+
+
+
+
+
+
+
+____________________  4. Create models for posts app  ____________________
+    - posts/models.py
+    - import models [... from db]
+    - Create class name Post
+        Extends to Model detived class [... models.Model]
+        create a variable text [... class -> Text Field , Attribute - Empty]
+            class Post(models.Model):
+                text = models.TextField()
+    - Activating models
+        python manage.py makemigrations posts [... App name -> posts]
+        python manage.py migrate
+
+____________________  5. Setup Django Admin Interface   ____________________
+    - Creation of super user
+        python manage.py createsuperuser
+    - import admin [... from contrib]
+    - import Post [... from models]
+    - Register the model with admin.site.register()
+        admin.site.register(Post)
+
+____________________  6. Change the Display Name [post] - Descriptive Naming - Automatically ____________________
+    - Descriptive Naming - Automatically
+    -  posts/models.py
+    - Add new function __str__ [... str() methods]
+       ○ model instance methods
+       ○ __str__() method is called whenever you call str() on an object
+            def __str__(self):
+                return self.text[:50]
+
+
+____________________  10. SetUp ListView of Model  ____________________
+    - templates\home.html
+    - ListView - automatically returns to us a context variable called <model>_list
+        Eg:-
+            model name -> post
+             list view pass the variable like post_list
+             {% for post in post_list %} [... loop took variable one by one ]
+    - listing object
+        post.text [... text is object name]
